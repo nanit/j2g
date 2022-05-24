@@ -1,4 +1,4 @@
-from to_glue import convert
+from j2g import convert
 from pydantic import BaseModel
 from typing import List, Union
 
