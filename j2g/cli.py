@@ -11,8 +11,6 @@ def cli():
 
     file_path = sys.argv[1]
 
-    print(f'File: {file_path}')
-
     with open(file_path) as f:
         schema = f.read()
         schema = convert(schema)
