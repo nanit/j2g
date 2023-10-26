@@ -3,12 +3,13 @@
 ## Installation
 
 ```bash
-pip install git+https://github.com/nanit/j2g.git
+pip install git+https://github.com/sneako/j2g.git
+
 ```
 
 ## What?
 
-Converts `pydantic` schemas to `json schema` and then to `AWS glue schema`, so in theory anything that can be converted to JSON Schema *could* also work.
+Converts `json schema` to `AWS glue schema`.
 
 ## Why?
 
@@ -28,23 +29,61 @@ This tool allows you to define a table in `pydantic` and generate a JSON with co
 
 Take the following pydantic class
 
-```python
-from pydantic import BaseModel
-from typing import List
-
-class Bar(BaseModel):
-    name: str
-    age: int
-
-class Foo(BaseModel):
-    nums: List[int]
-    bars: List[Bar]
-    other: str
+```json
+{
+  "title": "Foo",
+  "type": "object",
+  "properties": {
+    "nums": {
+      "title": "Nums",
+      "type": "array",
+      "items": {
+        "type": "integer"
+      }
+    },
+    "bars": {
+      "title": "Bars",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Bar"
+      }
+    },
+    "other": {
+      "title": "Other",
+      "type": "string"
+    }
+  },
+  "required": [
+    "nums",
+    "bars",
+    "other"
+  ],
+  "definitions": {
+    "Bar": {
+      "title": "Bar",
+      "type": "object",
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "age": {
+          "title": "Age",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "name",
+        "age"
+      ]
+    }
+  }
+}
 ```
 
 Running `j2g`
 ```bash
-python j2g example.py Foo
+j2g example.json
 ```
 
 you get this JSON
@@ -60,38 +99,3 @@ you get this JSON
 }
 ```
 
-and can be used in terraform like that
-
-
-```terraform
-locals {
-  columns = jsondecode(file("${path.module}/glue_schema.json")).columns
-}
-
-resource "aws_glue_catalog_table" "table" {
-  name          = "table_name"
-  database_name = "db_name"
-
-  storage_descriptor {
-    dynamic "columns" {
-      for_each = local.columns
-
-      content {
-        name = columns.key
-        type = columns.value
-      }
-    }
-  }
-}
-```
-
-## How it works?
-
-* `pydantic` gets converted to JSON Schema
-* the JSON Schema types get mapped to Glue types recursively
-
-## Future work
-
-* Not all types are supported, I just add types as I need them, but adding types is very easy, feel free to open issues or send a PR if you stumbled upon an non-supported use case
-* the tool could be easily extended to working with JSON Schema directly
-* thus anything that can be converted to a JSON Schema should also work.

@@ -15,8 +15,6 @@ def cli():
 
     with open(file_path) as f:
         schema = f.read()
-        print(f'Read: {schema}')
-        print(schema)
         schema = convert(schema)
         schema = {k: v for (k,v) in schema}
         schema = {
