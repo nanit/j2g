@@ -11,7 +11,7 @@ setuptools.setup(
     install_requires=[
         'setuptools',
         'jsonref==0.2',
-        'pydantic==1.9.1',
+        'pydantic==1.10.13',
         'typing_extensions==4.2.0',
     ],
     python_requires='>=3.8'
